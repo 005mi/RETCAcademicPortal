@@ -35,7 +35,7 @@ export async function uploadFile(file: File | Buffer, fileName: string, mimeType
         'Content-Type': mimeType,
         'x-upsert': 'true'
       },
-      body: buffer
+      body: new Uint8Array(buffer)
     });
 
     if (!response.ok) {
