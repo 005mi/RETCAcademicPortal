@@ -31,7 +31,7 @@ export async function GET(request: Request, props: { params: Promise<{ id: strin
       }
     }
 
-    return new Response(fileBuffer, {
+    return new Response(new Uint8Array(fileBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': isPreview 
