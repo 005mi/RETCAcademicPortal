@@ -129,7 +129,7 @@ export default function StatsPage() {
                     data={chartData} cx="50%" cy="42%" 
                     innerRadius={55} outerRadius={95} 
                     paddingAngle={3} dataKey="value" 
-                    label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`} 
+                    label={({ name, percent }) => `${name || ''} ${((percent || 0) * 100).toFixed(0)}%`} 
                     labelLine={{ strokeWidth: 1 }}
                   >
                     {chartData.map((entry, index) => (
