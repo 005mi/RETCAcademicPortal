@@ -53,7 +53,7 @@ export async function uploadFile(file: File | Buffer, fileName: string, mimeType
     };
   } else {
     // LOCAL STORAGE LOGIC
-    const buffer = file instanceof Buffer ? file : Buffer.from(await file.arrayBuffer());
+    const buffer = file instanceof Buffer ? file : Buffer.from(await (file as File).arrayBuffer());
     const uploadDir = path.join(process.cwd(), 'public', 'uploads');
     
     if (!fs.existsSync(uploadDir)) {
