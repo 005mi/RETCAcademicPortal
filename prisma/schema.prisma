@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                 String     @id @default(cuid())
+  username           String     @unique
+  email              String?    @unique
+  password_hash      String
+  role               String     // "STUDENT", "OUTSIDER", "ADMIN"
+  student_id         String?    @unique
+  phone              String?
+  email_verified     Boolean    @default(false)
+  notify_new_project Boolean    @default(false)
+  createdAt          DateTime   @default(now())
+
+  // Relations
+  papers             Paper[]    @relation("Uploader")
+  ratings            Rating[]
+  favorites          Favorite[]
+  comments           Comment[]
+}
+
+model Paper {
+  id               String     @id @default(cuid())
+  
+  // Section 1: Basic Info
+  title_th         String
+  title_en         String?
+  department       String     // EE, ET, PT, MT, CT (from choices)
+  academicYear     Int
+  research_type    String     // classroom, r_d, innovation, survey, other
+  
+  // Section 2: Team & Org
+  student_name     String
+  researcher_co1   String?
+  researcher_co2   String?
+  organization     String     @default("วิทยาลัยเทคนิคร้อยเอ็ด")
+  funding_by       String?
+  awards           String?
+  
+  // Section 3: Content
+  abstract         String
+  keywords         String?
+  background       String?
+  objectives       String?
+  scope            String?
+  theory           String?
+  methodology      String?
+  results          String?
+  discussion       String?
+  suggestions_use  String?
+  suggestions_next String?
+  other_info       String?    
+
+  // Section 4: Files & Tracking
+  filePath         String
+  status         String     @default("PENDING") // "PENDING", "PUBLISHED"
+  views            Int        @default(0)
+  downloads        Int        @default(0)
+  createdAt        DateTime   @default(now())
+  
+  uploaderId       String
+  uploader         User       @relation("Uploader", fields: [uploaderId], references: [id])
+
+  ratings          Rating[]
+  favorites        Favorite[]
+  comments         Comment[]
+}
+
+model Rating {
+  userId  String
+  paperId String
+  score   Int      // 1 to 5
+  user    User     @relation(fields: [userId], references: [id])
+  paper   Paper    @relation(fields: [paperId], references: [id])
+
+  @@id([userId, paperId])
+}
+
+model Favorite {
+  userId  String
+  paperId String
+  user    User     @relation(fields: [userId], references: [id])
+  paper   Paper    @relation(fields: [paperId], references: [id])
+
+  @@id([userId, paperId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  userId    String
+  paperId   String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  isEdited  Boolean  @default(false)
+
+  user      User     @relation(fields: [userId], references: [id])
+  paper     Paper    @relation(fields: [paperId], references: [id], onDelete: Cascade)
+}
