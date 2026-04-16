@@ -6,10 +6,8 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-const pgUrl = (process.env.DATABASE_URL || '').replace(':5432', ':6543');
-
 const pool = new Pool({ 
-  connectionString: pgUrl,
+  connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
 const adapter = new PrismaPg(pool);

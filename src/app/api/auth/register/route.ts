@@ -40,6 +40,7 @@ export async function POST(request: Request) {
     if (existing) {
       if (existing.username === username) return NextResponse.json({ error: `ชื่อผู้ใช้ "${username}" มีผู้อื่นใช้งานแล้ว` }, { status: 400 });
       if (existing.email === email) return NextResponse.json({ error: 'อีเมลนี้ถูกใช้งานแล้ว' }, { status: 400 });
+      if (existing.student_id === student_id) return NextResponse.json({ error: `รหัสนักศึกษา "${student_id}" เคยลงทะเบียนไปแล้ว` }, { status: 400 });
     }
 
     const salt = await bcrypt.genSalt(10);
