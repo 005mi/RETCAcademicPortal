@@ -60,6 +60,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, user: { id: user.id, username: user.username, role: user.role } });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: 'ระบบขัดข้อง กรุณาลองใหม่อีกครั้ง' }, { status: 500 });
+    return NextResponse.json({ error: '시스템 에러: ' + (error instanceof Error ? error.stack : String(error)) }, { status: 500 });
+
   }
 }
