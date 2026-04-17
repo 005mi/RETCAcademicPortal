@@ -431,13 +431,13 @@ function UploadForm() {
           <SmartTextarea name="background" label="ความเป็นมา/หลักการและเหตุผล" value={background} onChange={setBackground} rows={4} onOpenGuide={() => setShowGuide(true)} />
           <SmartTextarea name="objectives" label="วัตถุประสงค์การวิจัย" value={objectives} onChange={setObjectives} rows={4} onOpenGuide={() => setShowGuide(true)} />
           <SmartTextarea name="scope" label="ขอบเขตการวิจัย" value={scope} onChange={setScope} rows={3} onOpenGuide={() => setShowGuide(true)} />
+          <SmartTextarea name="suggestions_use" label="ประโยชน์ที่คาดว่าจะได้รับ" value={suggestionsUse} onChange={setSuggestionsUse} rows={3} onOpenGuide={() => setShowGuide(true)} />
           
           <SmartTextarea name="theory" label="ทฤษฎีที่เกี่ยวข้อง" value={theory} onChange={setTheory} rows={4} onOpenGuide={() => setShowGuide(true)} />
           <SmartTextarea name="methodology" label="วิธีการดำเนินการวิจัย" value={methodology} onChange={setMethodology} rows={5} onOpenGuide={() => setShowGuide(true)} />
           <SmartTextarea name="results" label="ผลการวิจัย" value={results} onChange={setResults} rows={5} onOpenGuide={() => setShowGuide(true)} />
           <SmartTextarea name="discussion" label="อภิปรายผล" value={discussion} onChange={setDiscussion} rows={4} onOpenGuide={() => setShowGuide(true)} />
           
-          <SmartTextarea name="suggestions_use" label="ประโยชน์ที่คาดว่าจะได้รับ" value={suggestionsUse} onChange={setSuggestionsUse} rows={3} onOpenGuide={() => setShowGuide(true)} />
           <SmartTextarea name="suggestions_next" label="ข้อเสนอแนะในการวิจัยครั้งต่อไป" value={suggestionsNext} onChange={setSuggestionsNext} rows={3} onOpenGuide={() => setShowGuide(true)} />
           
 
