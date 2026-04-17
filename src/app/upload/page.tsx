@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { v4 as uuidv4 } from 'uuid';
 import FormatGuideModal from '@/components/FormatGuideModal';
 
 const DEPARTMENTS = [
@@ -345,15 +346,60 @@ function UploadForm() {
     const formData = new FormData(e.currentTarget);
     const file = formData.get('pdf_file') as File;
     
-    if (file && file.size > 4.5 * 1024 * 1024) {
-      setError('ไฟล์ PDF มีขนาดใหญ่เกินไป (Vercel จำกัดที่ 4.5MB) กรุณาลดขนาดไฟล์ก่อนอัปโหลด');
+    if (file && file.size > 10 * 1024 * 1024) {
+      setError('ไฟล์ PDF มีขนาดใหญ่เกินไป (จำกัดที่ 10MB) กรุณาลดขนาดไฟล์ก่อนอัปโหลด');
       setLoading(false);
       return;
     }
     
     try {
+      let finalFilePath = null;
+
+      // 1. Direct Upload to Supabase if new file is selected
+      if (file && file.size > 0) {
+        setSuccess('กำลังอัปโหลดไฟล์ PDF ตรงไปที่ Cloud... (โปรดรอสักครู่)');
+        
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        const bucketName = 'papers';
+
+        if (!supabaseUrl || !supabaseAnonKey) {
+          throw new Error('Supabase client configuration is missing');
+        }
+
+        const fileName = `${uuidv4()}.pdf`;
+        const uploadUrl = `${supabaseUrl}/storage/v1/object/${bucketName}/${fileName}`;
+        
+        const uploadRes = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+            'Content-Type': 'application/pdf',
+            'x-upsert': 'true'
+          },
+          body: file
+        });
+
+        if (!uploadRes.ok) {
+          const uploadErr = await uploadRes.text();
+          console.error('Supabase Direct Upload Error:', uploadErr);
+          throw new Error(`อัปโหลดไฟล์ล้มเหลว: ${uploadRes.statusText}`);
+        }
+
+        finalFilePath = fileName;
+      }
+
+      // 2. Submit Metadata to our API
+      setSuccess('กำลังบันทึกข้อมูลวิจัย...');
       const endpoint = editId ? `/api/papers/${editId}` : '/api/papers';
       const method = editId ? 'PUT' : 'POST';
+
+      // We remove the file from formData to avoid Vercel body limits
+      // and only send the key
+      formData.delete('pdf_file');
+      if (finalFilePath) {
+        formData.append('filePath', finalFilePath);
+      }
 
       const res = await fetch(endpoint, { method, body: formData });
       if (res.ok) {
@@ -369,10 +415,12 @@ function UploadForm() {
           errorMessage = `เซิร์ฟเวอร์ตอนกลับผิดพลาด (Status: ${res.status} ${res.statusText})`;
         }
         setError(errorMessage);
+        setSuccess('');
       }
     } catch (err) {
       console.error(err);
-      setError('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + (err instanceof Error ? err.message : String(err)));
+      setError('เกิดข้อผิดพลาด: ' + (err instanceof Error ? err.message : String(err)));
+      setSuccess('');
     } finally {
       setLoading(false);
     }

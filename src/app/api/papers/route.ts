@@ -81,18 +81,23 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     
-    // File upload
-    const pdfFile = formData.get('pdf_file') as File;
-    if (!pdfFile || pdfFile.size === 0) {
-      return NextResponse.json({ error: 'PDF file is required' }, { status: 400 });
-    }
+    // Support both direct file upload (legacy/small files) and pre-uploaded path (large files)
+    let filePath = formData.get('filePath') as string;
+    
+    if (!filePath) {
+      const pdfFile = formData.get('pdf_file') as File;
+      if (!pdfFile || pdfFile.size === 0) {
+        return NextResponse.json({ error: 'PDF file is required' }, { status: 400 });
+      }
 
-    if (pdfFile.size > 10 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File size must be less than 10MB' }, { status: 400 });
-    }
+      if (pdfFile.size > 10 * 1024 * 1024) {
+        return NextResponse.json({ error: 'File size must be less than 10MB' }, { status: 400 });
+      }
 
-    const fileName = `${uuidv4()}.pdf`;
-    const { filePath } = await uploadFile(pdfFile, fileName, 'application/pdf');
+      const fileName = `${uuidv4()}.pdf`;
+      const uploadRes = await uploadFile(pdfFile, fileName, 'application/pdf');
+      filePath = uploadRes.filePath;
+    }
 
     const paper = await prisma.paper.create({
       data: {
