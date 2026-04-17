@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { toast } from 'react-hot-toast';
 
 export default function RegisterPage() {
   const [userType, setUserType] = useState('student');
@@ -11,13 +12,10 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [showPass, setShowPass] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(''); setSuccess('');
     const role = userType === 'student' ? 'STUDENT' : 'OUTSIDER';
     const res = await fetch('/api/auth/register', {
       method: 'POST',
@@ -32,11 +30,11 @@ export default function RegisterPage() {
       })
     });
     if (res.ok) {
-      setSuccess('สมัครสมาชิกสำเร็จ! ยินดีต้อนรับ กำลังไปหน้าเข้าสู่ระบบ...');
+      toast.success('สมัครสมาชิกสำเร็จ! กำลังไปหน้าเข้าสู่ระบบ...');
       setTimeout(() => router.push('/login'), 2000);
     } else {
       const data = await res.json();
-      setError(data.error || 'สมัครสมาชิกไม่สำเร็จ');
+      toast.error(data.error || 'สมัครสมาชิกไม่สำเร็จ');
     }
   };
 
@@ -50,9 +48,6 @@ export default function RegisterPage() {
         <h1 style={{ color: 'var(--navy)', marginBottom: 8, fontSize: '1.8rem' }}>ลงทะเบียนผู้ใช้งานใหม่</h1>
         <p style={{ color: 'var(--gray-500)' }}>RETC Academic Repository คลังงานวิจัยวิทยาลัยเทคนิคร้อยเอ็ด</p>
       </div>
-
-      {error && <div className="alert alert-error"><i className="fas fa-exclamation-circle"></i> {error}</div>}
-      {success && <div className="alert alert-success"><i className="fas fa-check-circle"></i> {success}</div>}
 
       <form onSubmit={handleSubmit}>
         <div style={{ display: 'flex', gap: 12, marginBottom: 24, padding: 4, background: 'var(--gray-100)', borderRadius: 12 }}>

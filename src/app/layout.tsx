@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import { getSession } from '@/lib/auth';
+import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
   title: 'RETC Academic Portal | วิทยาลัยเทคนิคร้อยเอ็ด',
@@ -23,6 +24,17 @@ export default async function RootLayout({
       <body>
         <Navbar user={session} />
         {children}
+        <Toaster 
+          position="top-right" 
+          toastOptions={{
+            duration: 4000,
+            style: {
+              fontFamily: "'Sarabun', sans-serif",
+              borderRadius: '8px',
+              padding: '16px',
+            },
+          }} 
+        />
       </body>
     </html>
   );

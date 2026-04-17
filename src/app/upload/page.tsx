@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { v4 as uuidv4 } from 'uuid';
+import { toast } from 'react-hot-toast';
 import FormatGuideModal from '@/components/FormatGuideModal';
 
 const DEPARTMENTS = [
@@ -295,11 +296,12 @@ function UploadForm() {
 
   const handleAIAnalyze = async () => {
     if (!pdfFile) {
-      setError('กรุณาเลือกไฟล์ PDF ก่อนใช้ระบบ AI วิเคราะห์');
+      toast.error('กรุณาเลือกไฟล์ PDF ก่อนใช้ระบบ AI วิเคราะห์');
       return;
     }
 
-    setAnalyzing(true); setError(''); setSuccess('');
+    setAnalyzing(true);
+    const toastId = toast.loading('กำลังให้ AI วิเคราะห์ไฟล์...');
     
     const formData = new FormData();
     formData.append('file', pdfFile);
@@ -327,13 +329,13 @@ function UploadForm() {
         if (result.suggestions_use) setSuggestionsUse(result.suggestions_use);
         if (result.suggestions_next) setSuggestionsNext(result.suggestions_next);
 
-        setSuccess('AI ได้วิเคราะห์และเติมข้อมูลครบทุกหัวข้อวิจัยแล้ว กรุณาตรวจสอบความถูกต้องอีกครั้ง');
+        toast.success('AI เติมข้อมูลให้แล้ว กรุณาตรวจสอบอีกครั้ง', { id: toastId });
       } else {
         const data = await res.json();
-        setError(data.error || 'AI ไม่สามารถวิเคราะห์ไฟล์ได้');
+        toast.error(data.error || 'AI ไม่สามารถวิเคราะห์ไฟล์ได้', { id: toastId });
       }
     } catch (err) {
-      setError('เกิดข้อผิดพลาดในการเชื่อมต่อกับ AI');
+      toast.error('เกิดข้อผิดพลาดในการเชื่อมต่อกับ AI', { id: toastId });
     } finally {
       setAnalyzing(false);
     }
@@ -341,23 +343,25 @@ function UploadForm() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true); setError(''); setSuccess('');
+    setLoading(true);
     
     const formData = new FormData(e.currentTarget);
     const file = formData.get('pdf_file') as File;
     
     if (file && file.size > 10 * 1024 * 1024) {
-      setError('ไฟล์ PDF มีขนาดใหญ่เกินไป (จำกัดที่ 10MB) กรุณาลดขนาดไฟล์ก่อนอัปโหลด');
+      toast.error('ไฟล์ PDF มีขนาดใหญ่เกินไป (จำกัดที่ 10MB)');
       setLoading(false);
       return;
     }
+    
+    let toastId = toast.loading(editId ? 'กำลังบันทึกข้อมูล...' : 'กำลังส่งผลงาน...');
     
     try {
       let finalFilePath = null;
 
       // 1. Direct Upload to Supabase if new file is selected
       if (file && file.size > 0) {
-        setSuccess('กำลังอัปโหลดไฟล์ PDF ตรงไปที่ Cloud... (โปรดรอสักครู่)');
+        toast.loading('กำลังอัปโหลดไฟล์ตรงไปที่ Cloud...', { id: toastId });
         
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
         const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -390,7 +394,7 @@ function UploadForm() {
       }
 
       // 2. Submit Metadata to our API
-      setSuccess('กำลังบันทึกข้อมูลวิจัย...');
+      toast.loading('กำลังบันทึกข้อมูลวิจัย...', { id: toastId });
       const endpoint = editId ? `/api/papers/${editId}` : '/api/papers';
       const method = editId ? 'PUT' : 'POST';
 
@@ -403,7 +407,7 @@ function UploadForm() {
 
       const res = await fetch(endpoint, { method, body: formData });
       if (res.ok) {
-        setSuccess(editId ? 'ปรับปรุงข้อมูลสำเร็จแล้ว' : 'ส่งผลงานสำเร็จแล้ว กรุณารอแอดมินตรวจสอบและอนุมัติ');
+        toast.success(editId ? 'ปรับปรุงข้อมูลสำเร็จแล้ว!' : 'ส่งผลงานสำเร็จแล้ว!', { id: toastId });
         if (!editId) localStorage.removeItem('upload_draft');
         setTimeout(() => router.push(editId ? `/papers/${editId}` : '/my-papers'), 2000);
       } else {
@@ -412,15 +416,13 @@ function UploadForm() {
           const data = await res.json();
           errorMessage = data.error || errorMessage;
         } catch (e) {
-          errorMessage = `เซิร์ฟเวอร์ตอนกลับผิดพลาด (Status: ${res.status} ${res.statusText})`;
+          errorMessage = `เซิร์ฟเวอร์ตอบกลับผิดพลาด (Status: ${res.status})`;
         }
-        setError(errorMessage);
-        setSuccess('');
+        toast.error(errorMessage, { id: toastId });
       }
     } catch (err) {
       console.error(err);
-      setError('เกิดข้อผิดพลาด: ' + (err instanceof Error ? err.message : String(err)));
-      setSuccess('');
+      toast.error('เกิดข้อผิดพลาดในการเชื่อมต่อ', { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -452,8 +454,6 @@ function UploadForm() {
       </div>
 
       <div className="form-card" style={{ maxWidth: 900, marginTop: -10, padding: '40px 5%', position: 'relative', zIndex: 10 }}>
-        {error && <div className="alert alert-error"><i className="fas fa-exclamation-circle"></i> {error}</div>}
-        {success && <div className="alert alert-success"><i className="fas fa-check-circle"></i> {success}</div>}
 
         {userRole === 'ADMIN' && !editId && (
           <div style={{ background: 'var(--navy-light)', color: 'white', padding: 20, borderRadius: 12, marginBottom: 30, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20 }}>

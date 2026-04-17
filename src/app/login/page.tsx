@@ -3,18 +3,17 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { toast } from 'react-hot-toast';
 
 export default function LoginPage() {
   const [role, setRole] = useState('student');
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
-  const [error, setError] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     const isStudent = role === 'student';
     const res = await fetch('/api/auth/login', {
       method: 'POST',
@@ -22,10 +21,11 @@ export default function LoginPage() {
       body: JSON.stringify({ identifier, password, isStudent })
     });
     if (res.ok) {
+      toast.success('เข้าสู่ระบบสำเร็จ ยินดีต้อนรับครับ!');
       router.push('/');
       router.refresh();
     } else {
-      setError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+      toast.error('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
     }
   };
 
@@ -41,12 +41,6 @@ export default function LoginPage() {
         <h1 style={{ color: 'var(--navy)', marginBottom: 8, fontSize: '1.8rem' }}>เข้าสู่ระบบ</h1>
         <p style={{ color: 'var(--gray-500)' }}>RETC Academic Repository</p>
       </div>
-
-      {error && (
-        <div className="alert alert-error">
-          <i className="fas fa-exclamation-circle"></i> {error}
-        </div>
-      )}
 
       <form onSubmit={handleSubmit}>
         <div style={{ display: 'flex', gap: 8, marginBottom: 24, padding: 4, background: 'var(--gray-100)', borderRadius: 12 }}>

@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 
 export default function Navbar({ user }: { user: any }) {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function Navbar({ user }: { user: any }) {
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
+    toast.success('ออกจากระบบสำเร็จแล้ว', { icon: '👋' });
     router.push('/login');
     router.refresh();
   };
