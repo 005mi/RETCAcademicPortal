@@ -176,6 +176,61 @@ function UploadForm() {
 
   const [pdfFile, setPdfFile] = useState<File | null>(null);
 
+  // Draft Persistence: Load
+  useEffect(() => {
+    if (!editId) {
+      const saved = localStorage.getItem('upload_draft');
+      if (saved) {
+        try {
+          const draft = JSON.parse(saved);
+          if (draft.titleTh) setTitleTh(draft.titleTh);
+          if (draft.titleEn) setTitleEn(draft.titleEn);
+          if (draft.department) setDepartment(draft.department);
+          if (draft.researchType) setResearchType(draft.researchType);
+          if (draft.academicYear) setAcademicYear(draft.academicYear);
+          if (draft.organization) setOrganization(draft.organization);
+          if (draft.studentName) setStudentName(draft.studentName);
+          if (draft.researcherCo1) setResearcherCo1(draft.researcherCo1);
+          if (draft.researcherCo2) setResearcherCo2(draft.researcherCo2);
+          if (draft.fundingBy) setFundingBy(draft.fundingBy);
+          if (draft.awards) setAwards(draft.awards);
+          if (draft.abstract) setAbstract(draft.abstract);
+          if (draft.background) setBackground(draft.background);
+          if (draft.objectives) setObjectives(draft.objectives);
+          if (draft.scope) setScope(draft.scope);
+          if (draft.theory) setTheory(draft.theory);
+          if (draft.methodology) setMethodology(draft.methodology);
+          if (draft.results) setResults(draft.results);
+          if (draft.discussion) setDiscussion(draft.discussion);
+          if (draft.suggestionsUse) setSuggestionsUse(draft.suggestionsUse);
+          if (draft.suggestionsNext) setSuggestionsNext(draft.suggestionsNext);
+          if (draft.keywords) setKeywords(draft.keywords);
+          if (draft.otherInfo) setOtherInfo(draft.other_info || '');
+        } catch (e) {
+          console.error("Failed to parse draft", e);
+        }
+      }
+    }
+  }, [editId]);
+
+  // Draft Persistence: Save
+  useEffect(() => {
+    if (!editId && !loading) {
+      const draft = {
+        titleTh, titleEn, department, researchType, academicYear, organization,
+        studentName, researcherCo1, researcherCo2, fundingBy, awards,
+        abstract, background, objectives, scope, theory, methodology, results, discussion,
+        suggestionsUse, suggestionsNext, keywords, otherInfo
+      };
+      localStorage.setItem('upload_draft', JSON.stringify(draft));
+    }
+  }, [
+    editId, loading, titleTh, titleEn, department, researchType, academicYear, organization,
+    studentName, researcherCo1, researcherCo2, fundingBy, awards,
+    abstract, background, objectives, scope, theory, methodology, results, discussion,
+    suggestionsUse, suggestionsNext, keywords, otherInfo
+  ]);
+
   // Fetch User Role
   useEffect(() => {
     const fetchUser = async () => {
@@ -303,6 +358,7 @@ function UploadForm() {
       const res = await fetch(endpoint, { method, body: formData });
       if (res.ok) {
         setSuccess(editId ? 'ปรับปรุงข้อมูลสำเร็จแล้ว' : 'ส่งผลงานสำเร็จแล้ว กรุณารอแอดมินตรวจสอบและอนุมัติ');
+        if (!editId) localStorage.removeItem('upload_draft');
         setTimeout(() => router.push(editId ? `/papers/${editId}` : '/my-papers'), 2000);
       } else {
         const data = await res.json();
