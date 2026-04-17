@@ -382,8 +382,8 @@ function UploadForm() {
 
         if (!uploadRes.ok) {
           const uploadErr = await uploadRes.text();
-          console.error('Supabase Direct Upload Error:', uploadErr);
-          throw new Error(`อัปโหลดไฟล์ล้มเหลว: ${uploadRes.statusText}`);
+          console.error('Supabase Direct Upload Error:', uploadRes.status, uploadRes.statusText, uploadErr);
+          throw new Error(`อัปโหลดไฟล์ล้มเหลว: [${uploadRes.status} ${uploadRes.statusText}] ${uploadErr}`);
         }
 
         finalFilePath = fileName;
