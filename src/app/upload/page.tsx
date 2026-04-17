@@ -345,8 +345,8 @@ function UploadForm() {
     const formData = new FormData(e.currentTarget);
     const file = formData.get('pdf_file') as File;
     
-    if (file && file.size > 10 * 1024 * 1024) {
-      setError('ไฟล์ PDF ต้องมีขนาดไม่เกิน 10MB');
+    if (file && file.size > 4.5 * 1024 * 1024) {
+      setError('ไฟล์ PDF มีขนาดใหญ่เกินไป (Vercel จำกัดที่ 4.5MB) กรุณาลดขนาดไฟล์ก่อนอัปโหลด');
       setLoading(false);
       return;
     }
@@ -361,11 +361,18 @@ function UploadForm() {
         if (!editId) localStorage.removeItem('upload_draft');
         setTimeout(() => router.push(editId ? `/papers/${editId}` : '/my-papers'), 2000);
       } else {
-        const data = await res.json();
-        setError(data.error || 'บันทึกไม่สำเร็จ');
+        let errorMessage = 'บันทึกไม่สำเร็จ';
+        try {
+          const data = await res.json();
+          errorMessage = data.error || errorMessage;
+        } catch (e) {
+          errorMessage = `เซิร์ฟเวอร์ตอนกลับผิดพลาด (Status: ${res.status} ${res.statusText})`;
+        }
+        setError(errorMessage);
       }
-    } catch {
-      setError('เกิดข้อผิดพลาดระหว่างบันทึก');
+    } catch (err) {
+      console.error(err);
+      setError('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setLoading(false);
     }
