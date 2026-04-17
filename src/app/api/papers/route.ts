@@ -133,17 +133,6 @@ export async function POST(request: Request) {
       }
     });
 
-    // Trigger Notification if Published immediately (Admin upload)
-    if (paper.status === 'PUBLISHED') {
-      const { broadcastNewPaper } = await import('@/lib/mailer');
-      // Fire and forget or await? Usually better to await to ensure logs
-      await broadcastNewPaper({
-        id: paper.id,
-        title_th: paper.title_th,
-        student_name: paper.student_name
-      });
-    }
-
     return NextResponse.json({ success: true, paper });
   } catch (error) {
     console.error(error);

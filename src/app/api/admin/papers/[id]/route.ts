@@ -18,16 +18,6 @@ export async function PATCH(request: Request, props: { params: Promise<{ id: str
       data: { status }
     });
 
-    // Trigger Notifications if Published
-    if (status === 'PUBLISHED') {
-      const { broadcastNewPaper } = await import('@/lib/mailer');
-      await broadcastNewPaper({
-        id: paper.id,
-        title_th: paper.title_th,
-        student_name: paper.student_name
-      });
-    }
-
     return NextResponse.json({ success: true, paper });
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

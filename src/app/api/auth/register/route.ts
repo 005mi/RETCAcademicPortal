@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
   try {
-    const { username, email, password, role, student_id, phone, notify_new_project } = await request.json();
+    const { username, email, password, role, student_id, phone } = await request.json();
 
     if (!username || !password || !role) {
       return NextResponse.json({ error: 'กรุณากรอกข้อมูลให้ครบถ้วน' }, { status: 400 });
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
         role, // STUDENT, OUTSIDER, ADMIN
         student_id: role === 'STUDENT' ? student_id : null,
         phone: phone || null,
-        notify_new_project: role === 'OUTSIDER' ? (notify_new_project || false) : false
+        notify_new_project: false
       }
     });
 

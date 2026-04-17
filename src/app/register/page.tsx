@@ -10,7 +10,6 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [notify, setNotify] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -29,8 +28,7 @@ export default function RegisterPage() {
         role, 
         email: userType === 'guest' ? email : undefined, 
         student_id: userType === 'student' ? username : undefined, 
-        phone,
-        notify_new_project: notify
+        phone
       })
     });
     if (res.ok) {
@@ -96,13 +94,6 @@ export default function RegisterPage() {
             <i className={`fas ${showPass ? 'fa-eye-slash' : 'fa-eye'}`} onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', right: 15, top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'var(--gray-400)' }}></i>
           </div>
         </div>
-
-        {userType === 'guest' && (
-          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <input type="checkbox" id="notify" checked={notify} onChange={e => setNotify(e.target.checked)} style={{ width: 18, height: 18, accentColor: 'var(--navy)' }} />
-            <label htmlFor="notify" style={{ margin: 0, fontWeight: 500, cursor: 'pointer' }}>ต้องการรับการแจ้งเตือนเมื่อมีผลงานวิจัยใหม่ทางอีเมล</label>
-          </div>
-        )}
 
         <button type="submit" className="btn btn-action" style={{ width: '100%', padding: 14, fontSize: '1.05rem', marginTop: 12 }}>
           <i className="fas fa-user-plus"></i> ยืนยันการสมัครสมาชิก
